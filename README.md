@@ -7,3 +7,8 @@ $ source .venv/bin/activate
 $ make 
 $ make deploy
 ```
+
+## Para sair do ambiente virtual
+```
+$ decativate
+```

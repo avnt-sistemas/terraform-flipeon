@@ -1,9 +1,13 @@
+import json
 from writer import S3Writer
 
-# id_conta, ano, mês, PDV.
 def handler(event, context):
-    writer = S3Writer("teste", "teste")
-    writer.write("teste corpo")
+    for record in event['Records']:
+        payload_json = record["body"].replace("'", '"')
+        payload = json.loads(payload_json)
 
-    print(event)
-    print(context)
+        if("caminho" in payload and "arquivo" in payload and "xml" in payload):
+            writer = S3Writer(payload["caminho"], payload["arquivo"])
+            writer.write(payload["xml"])
+
+    return {'statusCode': 200}

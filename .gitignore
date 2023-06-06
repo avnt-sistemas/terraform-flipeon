@@ -11,3 +11,6 @@ cdk.out
 
 # node
 node_modules
+
+# VsCode debug
+.vscode
