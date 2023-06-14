@@ -6,7 +6,7 @@ import multiprocessing
 
 from message_object import message_object
 
-API_URL = os.environ["FLIPEON_API"]
+API_URL = f'{os.environ["FLIPEON_API"]}/v1/callback/nfce-storage'
 DEST_S3_BUCKET = os.environ["DEST_S3_BUCKET"]
 
 _s3 = None
@@ -49,8 +49,8 @@ def handler(event, context):
 
     try:
         response_body = {"success": success, "error": error}
-
-        requests.post(url = API_URL, data=json.dumps(response_body))
+        response = requests.post(url = API_URL, json=response_body)
+        print(response)
     except Exception as ex:
         print("Ocorreu um erro ao atualizar o estado de integração: {0}".format(ex))
 
