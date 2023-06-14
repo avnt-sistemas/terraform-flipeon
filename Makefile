@@ -9,4 +9,4 @@ deploy_local:
 	localstack start -d
 
 	cdklocal bootstrap
-	LOCALSTACK_HOSTNAME=localhost cdklocal deploy -v
+	cdklocal deploy -v
