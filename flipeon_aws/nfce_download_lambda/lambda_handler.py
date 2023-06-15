@@ -37,10 +37,13 @@ def handler(event, context):
         get_client().upload_file(TEMP_FILE, DEST_S3_BUCKET, f"{payload_obj.key}.zip")
         os.unlink(TEMP_FILE)
 
+        url = get_client().generate_presigned_url('get_object', Params={'Bucket': DEST_S3_BUCKET, 'Key': f"{payload_obj.key}.zip"}, ExpiresIn = 2592000)
+
+        return {'statusCode': 200, 'url': url}
     else:
         print("objeto inválido: {0}".format(payload_obj))
+        return {'statusCode': 400}
         
-    return {'statusCode': 200}
 
 def get_object(key):
     try:
