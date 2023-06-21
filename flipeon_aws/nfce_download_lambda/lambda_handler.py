@@ -47,7 +47,7 @@ def handler(event, context):
 
 def get_object(key):
     try:
-        body = get_client().get_object(Bucket=SRC_S3_BUCKET, Key=key)['Body'].read()
+        body = get_client().get_object(Bucket=SRC_S3_BUCKET, Key=f"{key}.xml")['Body'].read()
         return key, body
     except Exception as ex:
         print("ocorreu um erro ao recuperar o objeto: {0} - {1}".format(key, ex))
