@@ -1,7 +1,9 @@
 from tempfile import NamedTemporaryFile
 
 class message_object(object):
-    def __init__(self, caminho, arquivo, xml):
+    def __init__(self, url_api, acao, caminho, arquivo, xml):
+        self.url_api = url_api
+        self.acao    = acao
         self.caminho = caminho
         self.arquivo = arquivo
         self.xml     = xml
