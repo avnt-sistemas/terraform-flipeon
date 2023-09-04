@@ -1,4 +1,4 @@
 aws-cdk-lib
 constructs
 boto3
-localstack
+localstack==2.1.0

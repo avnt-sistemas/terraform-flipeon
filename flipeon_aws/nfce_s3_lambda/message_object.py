@@ -1,12 +1,12 @@
 from tempfile import NamedTemporaryFile
 
 class message_object(object):
-    def __init__(self, url_api, acao, caminho, arquivo, xml):
-        self.url_api = url_api
+    def __init__(self, acao, caminho, arquivo, xml):
         self.acao    = acao
         self.caminho = caminho
         self.arquivo = arquivo
         self.xml     = xml
+        self.callback= ""
 
     def is_valid(self) -> bool:
         return self.caminho != "" and self.arquivo != "" and self.xml != ""

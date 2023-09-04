@@ -30,7 +30,7 @@ class FlipeonNFCeStack(Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.from_asset("flipeon_aws/nfce_s3_lambda"),
             environment={
-                "FLIPEON_API": "http://192.168.1.8:8080",
+                "FLIPEON_API": "https://api.flipeon.com/",
                 "DEST_S3_BUCKET": "nfce-xmls"
             }
         )
