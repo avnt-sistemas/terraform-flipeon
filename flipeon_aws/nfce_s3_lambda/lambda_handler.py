@@ -22,10 +22,10 @@ def get_client():
 
     return _s3
 
-def upload_object(file):
+def upload_object(file) -> (message_object, bool):
     try:
         s3 = get_client()
-        s3.put_object(Body=file.get_file(), Bucket=DEST_S3_BUCKET, Key=f'{file.caminho}/{file.arquivo}.xml')
+        s3.put_object(Body=file.get_file(), Bucket=DEST_S3_BUCKET, Key=f'{file.caminho}/{file.nome_arquivo}.xml')
 
         return file, True
     except Exception as ex:
@@ -49,12 +49,11 @@ def handler(event, context):
                 message_obj.callback = record["messageAttributes"]["callback_ip"]["stringValue"]
             else:
                 message_obj.callback = FLIPEON_API
-
             
         except Exception as ex:
             print("Ocorreu um erro ao processar parte das mensagens: {0}".format(ex))
 
-    error = []
+    errors = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=multiprocessing.cpu_count() * 4) as executor:
         futures = [executor.submit(upload_object, queue_file) for queue_file in queue_files]
         for future in concurrent.futures.as_completed(futures):
@@ -62,23 +61,15 @@ def handler(event, context):
 
             response_body = {}
             if(sucesso):
-                response_body = {"success": [arquivo.arquivo], "error": []}
+                response_body = {"success": [arquivo], "error": []}
             else:
-                response_body = {"success": [], "error": [arquivo.arquivo]}
-                error.append(arquivo.arquivo)
+                response_body = {"success": [], "error": [arquivo]}
+                errors.append(arquivo.nfce_id)
                 
             try:
-                url_base = arquivo.callback
-                
-                api_url = ""
-                if(arquivo.acao == "autorizacao"):
-                    api_url = os.path.join(url_base, 'v1/callback/nfce-storage')
-                else:
-                    api_url = os.path.join(url_base, 'v1/callback/nfce-storage-canceled')
-
-                print(url_base, api_url)
-                response = requests.post(url = api_url, json=response_body)
+                requests.post(url = arquivo.get_url(), json=response_body)
             except Exception as ex:
                 print("Ocorreu um erro ao atualizar o estado de integração: {0}".format(ex))
+                errors.append(arquivo.nfce_id)
 
-    return {'batchItemFailures': error}
+    return {'batchItemFailures': errors}
