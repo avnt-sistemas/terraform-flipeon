@@ -1,3 +1,4 @@
+import os
 from tempfile import NamedTemporaryFile
 
 class message_object(object):
@@ -20,10 +21,11 @@ class message_object(object):
 
         return temp_file
 
-    def get_url(self) -> string:
-        api_url, url_base = "", self.callback
+    def get_url(self) -> str:
+        api_url  = ""
+        url_base = self.callback
                 
-        if(arquivo.acao == "autorizacao"):
+        if(self.acao == "autorizacao"):
             api_url = os.path.join(url_base, 'v1/callback/nfce-storage')
         else:
             api_url = os.path.join(url_base, 'v1/callback/nfce-storage-canceled')

@@ -22,7 +22,7 @@ def get_client():
 
     return _s3
 
-def upload_object(file) -> (message_object, bool):
+def upload_object(file):
     try:
         s3 = get_client()
         s3.put_object(Body=file.get_file(), Bucket=DEST_S3_BUCKET, Key=f'{file.caminho}/{file.nome_arquivo}.xml')
@@ -61,12 +61,14 @@ def handler(event, context):
 
             response_body = {}
             if(sucesso):
-                response_body = {"success": [arquivo], "error": []}
+                response_body = {"success": [arquivo.nfce_id], "error": []}
             else:
-                response_body = {"success": [], "error": [arquivo]}
+                response_body = {"success": [], "error": [arquivo.nfce_id]}
                 errors.append(arquivo.nfce_id)
                 
             try:
+                print("Enviando callback para a API: {0}".format(response_body))
+                
                 requests.post(url = arquivo.get_url(), json=response_body)
             except Exception as ex:
                 print("Ocorreu um erro ao atualizar o estado de integração: {0}".format(ex))
