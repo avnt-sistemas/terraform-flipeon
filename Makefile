@@ -5,7 +5,8 @@ install:
 	npm install -g aws-cdk-local aws-cdk
 
 deploy_local:
-	localstack start -d
+	docker network create localstack
+	docker-compose up -d
 
 	cdklocal bootstrap
 	cdklocal deploy -v
