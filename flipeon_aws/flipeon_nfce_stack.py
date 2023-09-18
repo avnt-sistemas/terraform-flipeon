@@ -16,6 +16,7 @@ class FlipeonNFCeStack(Stack):
         # BUCKETS de NFCE
         # criando o buckets para armazenamento das nfces
         nfce_bucket = s3.Bucket(self, "nfce-xmls", bucket_name="nfce-xmls")
+        
         # LAMBDA DE PROCESSAMENTO
         # criando fila para processamento do lambda
         nfce_s3_queue = sqs.Queue(self, "nfce-s3-queue", queue_name="nfce-s3-storage-queue")
@@ -29,7 +30,7 @@ class FlipeonNFCeStack(Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.from_asset("flipeon_aws/nfce_s3_lambda"),
             environment={
-                "FLIPEON_API": "http://192.168.1.8:51016",
+                "FLIPEON_API": "https://api.flipeon.com/",
                 "DEST_S3_BUCKET": "nfce-xmls"
             }
         )
