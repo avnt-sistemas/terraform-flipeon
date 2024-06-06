@@ -1,0 +1,4 @@
+/.terraform
+/.pluralith
+.terraform.lock.hcl
+plan.out
