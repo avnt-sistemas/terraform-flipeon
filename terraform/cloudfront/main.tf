@@ -5,7 +5,7 @@ resource "aws_cloudfront_distribution" "main" {
 
   origin {
     domain_name = var.origin_domain_name
-    origin_id   = "Custom-${var.origin_domain_name}"
+    origin_id   = "cf-${var.origin_domain_name}"
   }
 
   enabled             = true
@@ -16,7 +16,7 @@ resource "aws_cloudfront_distribution" "main" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = "Custom-${var.origin_domain_name}"
+    target_origin_id = "cf-${var.origin_domain_name}"
 
     forwarded_values {
       query_string = false

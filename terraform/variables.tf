@@ -21,4 +21,10 @@ variable "region" {
   type        = string
   default     = "sa-east-1"
 }
+
+variable "use_eks" {
+  description = "Set to true to use EKS and false to use ECS"
+  type        = bool
+  default     = false
+}
   

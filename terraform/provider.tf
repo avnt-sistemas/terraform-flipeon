@@ -24,6 +24,9 @@ module "network" {
 }
 
 module "eks" {
+
+  count = var.use_eks ? 1 : 0
+
   source = "./eks"
   key_name         = "${var.project_name}-${var.environment}"
   cluster_name     = "${var.project_name}-${var.environment}"
@@ -32,6 +35,26 @@ module "eks" {
   subnet_ids               = module.network.private_subnets
   control_plane_subnet_ids = module.network.private_subnets
   source_security_group_ids = [module.network.security_group_id]
+}
+
+module "ecs" {
+  count = var.use_eks ? 0 : 1
+
+  source = "./ecs"
+  cluster_name = "${var.project_name}-${var.environment}"
+
+  region = var.region
+  account_id = "457504760127"
+
+
+  vpc_id     = module.network.vpc_id  
+  subnet_ids = module.network.private_subnets
+  source_security_group_ids = [module.network.security_group_id]
+
+  desired_capacity = 1
+  max_capacity = 2
+  task_cpu         = 1024
+  task_memory      = 4096
 }
 
 module "rds" {
@@ -82,6 +105,12 @@ module "docs_bucket" {
   transition_days = null
 }
 
+module "uploads_bucket" {
+  source = "./s3"
+  bucket_name = "uploads-bucket-${var.project_name}-${var.environment}"
+  project_group = var.project_group
+}
+
 module "support_bucket" {
   source = "./s3"
   bucket_name = "support-bucket-${var.project_name}-${var.environment}"
@@ -91,8 +120,6 @@ module "support_bucket" {
   transition_days = 7
 }
 
-module "uploads_bucket" {
-  source = "./s3"
-  bucket_name = "uploads-bucket-${var.project_name}-${var.environment}"
-  project_group = var.project_group
+module "route53" {
+  source = "./route53"
 }
