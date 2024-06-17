@@ -101,7 +101,7 @@ module "load_balancer" {
 
 module "cloudfront" {
   source                = "./cloudfront"
-  origin_domain_name    = "${var.project_name}.jnmoura.com.br"
+  origin_domain_name    = "${var.project_name}.com"
   default_root_object   = "index.html"
   project_group         = var.project_group
 }
