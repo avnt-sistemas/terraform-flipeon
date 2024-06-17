@@ -2,3 +2,4 @@
 /.pluralith
 .terraform.lock.hcl
 plan.out
+infracost-base.json
