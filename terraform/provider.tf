@@ -91,7 +91,7 @@ module "load_balancer" {
   source                 = "./lb"
   vpc_id                 = module.network.vpc_id
   security_group_id      = module.rds_security_group.rds_security_group_id
-  ssl_certificate_arn    = "arn:aws:acm:us-east-1:123456789012:certificate/abcdef01-1234-5678-90ab-cdef01234567"
+  ssl_certificate_arn    = "arn:aws:acm:us-east-1:457504760127:certificate/ddade52c-1cf3-4ad2-807a-5e309e35dbd2"
   subnet_ids             = module.network.subnet_ids
   
   project_group          = var.project_group
