@@ -1,52 +1,61 @@
-module "ecs" {
-  source = "sudo-terraform-aws-modules/ecs-container/aws"
-  version = "~> 2.0"
+# ECS Cluster
+resource "aws_ecs_cluster" "main" {
+  name = var.cluster_name
+}
 
-  name = "${var.cluster_name}-cluster"
+# ECS Task Definition
+resource "aws_ecs_task_definition" "main" {
+  family                   = var.cluster_name
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  
+  container_definitions = jsonencode([
+    {
+      name      = var.cluster_name
+      image     = var.image
+      essential = true
 
-  vpc_id        = var.vpc_id
-  subnet_ids    = var.subnet_ids
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+          protocol      = "tcp"
+        }
+      ]
 
-  create_ecs_cluster = true
-
-  ecs_cluster_capacity_providers = ["FARGATE", "FARGATE_SPOT"]
-
-  ecs_services = {
-    my_service = {
-      desired_count = var.desired_capacity
-      task_definition = "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.cluster_name}-service"
-      launch_type = "FARGATE"
-      network_configuration = {
-        assign_public_ip = true
-        subnets = var.subnet_ids
-        security_groups = var.source_security_group_ids
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.cluster_name}"
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "ecs"
+        }
       }
     }
+  ])
+}
+
+# ECS Service
+resource "aws_ecs_service" "main" {
+  name            = var.cluster_name
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.main.arn
+  launch_type     = "FARGATE"
+  desired_count   = 1
+  deployment_minimum_healthy_percent = 50
+  deployment_maximum_percent         = 200
+
+  network_configuration {
+    subnets         = var.subnet_ids
+    security_groups = var.source_security_group_ids
+    assign_public_ip = true
   }
 
-  ecs_task_definitions = {
-    my_task = {
-      container_definitions = jsonencode([
-        {
-          name  = "${var.cluster_name}-ecs-container"
-          image = "amazon/amazon-ecs-sample"
-          cpu   = var.container_cpu 
-          memory = var.container_memory
-          essential = true
-          portMappings = [
-            {
-              containerPort = 80
-              hostPort      = 80
-            }
-          ]
-        }
-      ])
-
-      family = "${var.cluster_name}-ecs-family"
-      requires_compatibilities = ["FARGATE"]
-      network_mode = "awsvpc"
-      cpu = var.task_cpu
-      memory = var.task_memory
-    }
+  load_balancer {
+    target_group_arn = var.lb_target_group
+    container_name   = var.cluster_name
+    container_port   = 80
   }
 }

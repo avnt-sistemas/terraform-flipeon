@@ -50,8 +50,8 @@ variable "db_allocated_storage" {
   default = 20
 }
 
-variable "default_security_group_id" {
-  description = "default_security_group_id"
+variable "vpc_id" {
+  description = "vpc_id"
 }
 
 variable "database_subnet_group" {

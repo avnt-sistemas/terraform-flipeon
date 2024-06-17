@@ -23,33 +23,48 @@ module "network" {
   vpc_name = var.project_name
 }
 
-module "eks" {
+# module "eks" {
 
-  count = var.use_eks ? 1 : 0
+#   count = var.use_eks ? 1 : 0
 
-  source = "./eks"
-  key_name         = "${var.project_name}-${var.environment}"
-  cluster_name     = "${var.project_name}-${var.environment}"
+#   source = "./eks"
+#   key_name         = "${var.project_name}-${var.environment}"
+#   cluster_name     = "${var.project_name}-${var.environment}"
 
-  vpc_id                   = module.network.vpc_id  
-  subnet_ids               = module.network.private_subnets
-  control_plane_subnet_ids = module.network.private_subnets
-  source_security_group_ids = [module.network.security_group_id]
-}
+#   vpc_id                   = module.network.vpc_id  
+#   subnet_ids               = module.network.private_subnets
+#   control_plane_subnet_ids = module.network.private_subnets
+#   source_security_group_ids = [module.network.security_group_id]
+# }
 
-module "ecs" {
-  count = var.use_eks ? 0 : 1
-
+module "ecs_app" {
   source = "./ecs"
-  cluster_name = "${var.project_name}-${var.environment}"
+  cluster_name = "${var.project_name}-app-${var.environment}"
 
   region = var.region
-  account_id = "457504760127"
-
 
   vpc_id     = module.network.vpc_id  
   subnet_ids = module.network.private_subnets
   source_security_group_ids = [module.network.security_group_id]
+  lb_target_group = module.load_balancer.load_balancer_target_group
+
+  desired_capacity = 1
+  max_capacity = 2
+  task_cpu         = 1024
+  task_memory      = 4096
+}
+
+
+module "ecs_api" {
+  source = "./ecs"
+  cluster_name = "${var.project_name}-api-${var.environment}"
+
+  region = var.region
+
+  vpc_id     = module.network.vpc_id  
+  subnet_ids = module.network.private_subnets
+  source_security_group_ids = [module.network.security_group_id]
+  lb_target_group = module.load_balancer.load_balancer_target_group
 
   desired_capacity = 1
   max_capacity = 2
@@ -63,7 +78,7 @@ module "rds" {
   db_name = "flipeon-rds-${var.environment}"
   db_username = var.project_name
   
-  default_security_group_id = module.network.security_group_id
+  vpc_id = module.network.vpc_id
   database_subnet_group   = module.network.database_subnet_group
 }
 
@@ -121,5 +136,9 @@ module "support_bucket" {
 }
 
 module "route53" {
-  source = "./route53"
+  source = "./r53"
+  environment = var.environment
+
+  lb_dns_name = module.load_balancer.load_balancer_dns_name
+  lb_zone_id  = module.load_balancer.load_balancer_zone_id
 }

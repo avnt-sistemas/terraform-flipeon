@@ -12,8 +12,8 @@ resource "aws_route53_record" "www" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.ecs_load_balancer.dns_name
-    zone_id                = aws_lb.ecs_load_balancer.zone_id
+    name                   = var.lb_dns_name
+    zone_id                = var.lb_zone_id
     evaluate_target_health = true
   }
 }
@@ -24,8 +24,8 @@ resource "aws_route53_record" "other_all" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.ecs_load_balancer.dns_name
-    zone_id                = aws_lb.ecs_load_balancer.zone_id
+    name                   = var.lb_dns_name
+    zone_id                = var.lb_zone_id
     evaluate_target_health = true
   }
 }
@@ -36,8 +36,8 @@ resource "aws_route53_record" "app" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.ecs_load_balancer.dns_name
-    zone_id                = aws_lb.ecs_load_balancer.zone_id
+    name                   = var.lb_dns_name
+    zone_id                = var.lb_zone_id
     evaluate_target_health = true
   }
 }
@@ -48,8 +48,8 @@ resource "aws_route53_record" "api" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.ecs_load_balancer.dns_name
-    zone_id                = aws_lb.ecs_load_balancer.zone_id
+    name                   = var.lb_dns_name
+    zone_id                = var.lb_zone_id
     evaluate_target_health = true
   }
 }

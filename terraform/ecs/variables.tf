@@ -38,11 +38,17 @@ variable "region" {
   type        = string
 }
 
-variable "account_id" {
-  description = "AWS account ID"
-  type        = string
-}
-
 variable "source_security_group_ids" {
   description = "source_security_group_ids"
+}
+
+variable "image" {
+  description = "The AMI to use for the ECS service"
+  type        = string
+  default     = "amazon/amazon-ecs-sample"
+}
+
+variable "lb_target_group" {
+  description = "The load balancer target group"
+  type        = string
 }

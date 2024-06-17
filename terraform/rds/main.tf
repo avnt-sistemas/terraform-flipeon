@@ -21,7 +21,7 @@ module "db" {
   password          = random_password.db_password.result
   port              = var.db_port
   
-  vpc_security_group_ids = var.default_security_group_id
+  vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = var.database_subnet_group
   skip_final_snapshot = true
 }
@@ -38,7 +38,7 @@ resource "aws_db_instance" "db_reader" {
   password          = random_password.db_password.result
   port              = var.db_port
   
-  vpc_security_group_ids = var.default_security_group_id
+  vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = var.database_subnet_group
 
   # Configuração da instância de leitura
@@ -48,4 +48,25 @@ resource "aws_db_instance" "db_reader" {
 resource "local_file" "db_password_file" {
   filename = "${path.module}/db_password.txt"
   content  = random_password.db_password.result
+}
+
+
+resource "aws_security_group" "rds" {
+  name        = "allow-rds-access"
+  description = "Allow access to RDS"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
