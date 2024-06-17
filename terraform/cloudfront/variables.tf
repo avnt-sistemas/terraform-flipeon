@@ -10,6 +10,15 @@ variable "default_root_object" {
 
 
 variable "project_group" {
-  description = "A map of tags to assign to the resource"
+  description = "A project group to assign to the resource"
+  type        = string
+}
+
+variable "project_name" {
+  description = "A project name to assign to the resource"
+  type        = string
+}
+variable "environment" {
+  description = "An environment name to assign to the resource"
   type        = string
 }
