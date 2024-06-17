@@ -1,6 +1,6 @@
 resource "aws_cloudfront_distribution" "main" {
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = "arn:aws:acm:us-east-1:457504760127:certificate/ddade52c-1cf3-4ad2-807a-5e309e35dbd2"
   }
 
   origin {
