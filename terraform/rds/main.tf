@@ -8,13 +8,16 @@ module "db" {
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 5.0"
 
-  family = "postgres11"
-
   identifier        = "${var.db_identifier}-writer"
+  
+  family = var.db_family
   engine            = var.db_engine
   engine_version    = var.db_engine_version
+  major_engine_version = var.db_engine_version
   instance_class    = var.db_instance_class
+  
   allocated_storage = var.db_allocated_storage
+  max_allocated_storage = var.db_max_allocated_storage
   
   db_name           = var.db_name
   username          = var.db_username
@@ -23,7 +26,8 @@ module "db" {
   
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = var.database_subnet_group
-  skip_final_snapshot = true
+  skip_final_snapshot    = true
+  
 }
 
 resource "aws_db_instance" "db_reader" {
@@ -57,8 +61,8 @@ resource "aws_security_group" "rds" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 3306
-    to_port     = 3306
+    from_port   = 5432
+    to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
   }

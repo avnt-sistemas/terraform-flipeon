@@ -1,7 +1,7 @@
 variable "environment" {
   description = "The environment of Project"
   type        = string
-  default     = "prod"
+  default     = "dev"
 }
 
 variable "project_group" {
@@ -16,10 +16,16 @@ variable "project_name" {
   default     = "flipeon"
 }
 
+variable "domain_name" {
+  description = "The domain name of project"
+  type        = string
+  default     = "flipeon.com"
+}
+
 variable "region" {
   description = "The AWS region to deploy in"
   type        = string
-  default     = "sa-east-1"
+  default     = "us-east-1" //"sa-east-1"
 }
 
 variable "use_eks" {

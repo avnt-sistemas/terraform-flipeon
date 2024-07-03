@@ -1,10 +1,17 @@
+variable "region" {
+  description = "The AWS region"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "The ID of the VPC"
   type        = string
 }
 
-variable "subnet_ids" {
-  description = "The IDs of the subnet"
+variable "domain_name" {
+  description = "The domain name of project"
+  type        = string
+  default     = "flipeon.com"
 }
 
 variable "security_group_id" {
@@ -12,10 +19,6 @@ variable "security_group_id" {
   type        = string
 }
 
-variable "ssl_certificate_arn" {
-  description = "The ARN of the SSL certificate"
-  type        = string
-}
 variable "environment" {
   description = "The environment of Project"
   type        = string
@@ -29,4 +32,9 @@ variable "project_name" {
 variable "project_group" {
   description = "The project group name"
   type        = string
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for the load balancer"
+  type        = list(string)
 }

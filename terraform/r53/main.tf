@@ -1,9 +1,9 @@
 locals {
-  domain = var.environment != "prod" ? "${var.environment}.flipeon.com" : "flipeon.com"
+  domain = var.environment != "prod" ? "${var.environment}.${var.domain_name}" : var.domain_name
 }
 
 resource "aws_route53_zone" "primary" {
-  name = "flipeon.com"
+  name = local.domain
 }
 
 resource "aws_route53_record" "www" {

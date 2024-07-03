@@ -23,19 +23,30 @@ module "network" {
   vpc_name = var.project_name
 }
 
-# module "eks" {
+module "rds_security_group" {
+  source    = "./sg"
+  vpc_id    = module.network.vpc_id
+}
 
-#   count = var.use_eks ? 1 : 0
+module "load_balancer" {
+  source                 = "./lb"
+  vpc_id                 = module.network.vpc_id
+  security_group_id      = module.rds_security_group.rds_security_group_id
+  subnet_ids             = module.network.private_subnets
+  
+  region                 = var.region
+  project_group          = var.project_group
+  environment            = var.environment
+  project_name           = var.project_name
+}
 
-#   source = "./eks"
-#   key_name         = "${var.project_name}-${var.environment}"
-#   cluster_name     = "${var.project_name}-${var.environment}"
+module "route53" {
+  source = "./r53"
+  environment = var.environment
 
-#   vpc_id                   = module.network.vpc_id  
-#   subnet_ids               = module.network.private_subnets
-#   control_plane_subnet_ids = module.network.private_subnets
-#   source_security_group_ids = [module.network.security_group_id]
-# }
+  lb_dns_name = module.load_balancer.load_balancer_dns_name
+  lb_zone_id  = module.load_balancer.load_balancer_zone_id
+}
 
 module "ecs_app" {
   source = "./ecs"
@@ -50,10 +61,10 @@ module "ecs_app" {
 
   desired_capacity = 1
   max_capacity = 2
-  task_cpu         = 1024
-  task_memory      = 4096
+  task_cpu         = 256
+  task_memory      = 512
+  
 }
-
 
 module "ecs_api" {
   source = "./ecs"
@@ -68,49 +79,24 @@ module "ecs_api" {
 
   desired_capacity = 1
   max_capacity = 2
-  task_cpu         = 1024
-  task_memory      = 4096
+  task_cpu         = 256
+  task_memory      = 512
 }
+
 
 module "rds" {
   source          = "./rds"
   db_identifier = "flipeon-rds-${var.environment}"
-  db_name = "flipeon-rds-${var.environment}"
+  db_name = "flipeon_${var.environment}"
   db_username = var.project_name
   
   vpc_id = module.network.vpc_id
   database_subnet_group   = module.network.database_subnet_group
-}
 
-module "rds_security_group" {
-  source    = "./sg"
-  vpc_id    = module.network.vpc_id
-}
+  db_family = "postgres14"
+  db_engine_version = "14"
 
-module "load_balancer" {
-  source                 = "./lb"
-  vpc_id                 = module.network.vpc_id
-  security_group_id      = module.rds_security_group.rds_security_group_id
-  ssl_certificate_arn    = "arn:aws:acm:us-east-1:457504760127:certificate/ddade52c-1cf3-4ad2-807a-5e309e35dbd2"
-  subnet_ids             = module.network.subnet_ids
-  
-  project_group          = var.project_group
-  environment            = var.environment
-  project_name           = var.project_name
-}
-
-module "cloudfront" {
-  source                = "./cloudfront"
-  project_name          = var.project_name
-  environment           = var.environment
-  origin_domain_name    = "${var.project_name}.com"
-  default_root_object   = "index.html"
-  project_group         = var.project_group
-}
-
-module "cloudwatch" {
-  source                = "./cloudwatch"
-  log_group_name        = "${var.project_name}-logs-${var.environment}"
+  depends_on = [ module.network ]
 }
 
 module "docs_bucket" {
@@ -122,7 +108,7 @@ module "docs_bucket" {
   transition_days = null
 }
 
-module "uploads_bucket" {
+module "uploads_bucket" { 
   source = "./s3"
   bucket_name = "uploads-bucket-${var.project_name}-${var.environment}"
   project_group = var.project_group
@@ -137,10 +123,24 @@ module "support_bucket" {
   transition_days = 7
 }
 
-module "route53" {
-  source = "./r53"
-  environment = var.environment
+module "cloudfront_bucket" {
+  source = "./s3"
+  bucket_name = "cloudfront-bucket-${var.project_name}-${var.environment}"
+  project_group = var.project_group
 
-  lb_dns_name = module.load_balancer.load_balancer_dns_name
-  lb_zone_id  = module.load_balancer.load_balancer_zone_id
+  transition_days = 3
+}
+
+module "cloudfront" {
+  source                = "./cloudfront"
+  project_name          = var.project_name
+  environment           = var.environment 
+  origin_domain_name    = module.cloudfront_bucket.bucket_domain_name
+  default_root_object   = "index.html"
+  project_group         = var.project_group
+}
+
+module "cloudwatch" {
+  source                = "./cloudwatch"
+  log_group_name        = "${var.project_name}-logs-${var.environment}"
 }

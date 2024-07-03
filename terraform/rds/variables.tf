@@ -20,34 +20,46 @@ variable "db_username" {
 }
 
 
+variable "db_family" {
+  description = "The engine for the database"
+  type        = string
+  default     = "postgres12"
+}
+
 variable "db_engine" {
   description = "The engine for the database"
   type        = string
-  default = "postgres"
+  default     = "postgres"
 }
 
 variable "db_engine_version" {
   description = "The engine version for the database"
   type        = string
-  default = "12.4"
+  default     = "12"
 }
 
 variable "db_reader_instance_class" {
   description = "The instance type for the database"
   type        = string
-  default = "db.t3.small"
+  default     = "db.t3.small"
 }
 
 variable "db_instance_class" {
   description = "The instance type for the database"
   type        = string
-  default = "db.t3.medium"
+  default     = "db.t3.medium"
 }
 
 variable "db_allocated_storage" {
   description = "The allocated storage for the database"
   type        = number
-  default = 20
+  default     = 20
+}
+
+variable "db_max_allocated_storage" {
+  description = "The allocated storage for the database"
+  type        = number
+  default     = 100
 }
 
 variable "vpc_id" {

@@ -1,6 +1,7 @@
 resource "aws_cloudfront_distribution" "main" {
   viewer_certificate {
     acm_certificate_arn = "arn:aws:acm:us-east-1:457504760127:certificate/ddade52c-1cf3-4ad2-807a-5e309e35dbd2"
+    ssl_support_method  = "sni-only"
   }
 
   origin {
@@ -26,7 +27,7 @@ resource "aws_cloudfront_distribution" "main" {
       }
     }
 
-    viewer_protocol_policy = "allow-all"
+    viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
@@ -39,8 +40,7 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   tags = {
-    Name = var.origin_domain_name
+    Name         = var.origin_domain_name
     ProjectGroup = var.project_group
   }
 }
-
