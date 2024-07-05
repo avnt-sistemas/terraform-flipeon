@@ -70,4 +70,18 @@ variable "database_subnet_group" {
   description = "database_subnet_group"
 }
 
+variable "project_group" {
+  description = "The project group name"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "A list of subnet IDs for the ECS service"
+  type        = list(string)
+}
+
+variable "load_balancer_security_group" {
+  description = "load_balancer_security_group"
+}
+
 

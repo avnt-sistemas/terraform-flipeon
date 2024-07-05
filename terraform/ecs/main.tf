@@ -89,3 +89,4 @@ resource "aws_ecs_service" "main" {
     container_port   = 80
   }
 }
+

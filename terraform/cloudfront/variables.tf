@@ -18,7 +18,18 @@ variable "project_name" {
   description = "A project name to assign to the resource"
   type        = string
 }
+
 variable "environment" {
   description = "An environment name to assign to the resource"
+  type        = string
+}
+
+variable "certificate_arn" {
+  description = "certificate_arn"
+  type        = string
+}
+
+variable "region" {
+  description = "The AWS region"
   type        = string
 }

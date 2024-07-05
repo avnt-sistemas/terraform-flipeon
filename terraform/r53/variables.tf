@@ -18,3 +18,13 @@ variable "domain_name" {
   type        = string
   default     = "flipeon.com"
 }
+
+variable "region" {
+  description = "The AWS region to deploy the resources"
+  type        = string
+}
+
+variable "dns_zone" {
+  description = "The ID of the Route 53 hosted zone"
+  type        = string
+}

@@ -7,7 +7,7 @@ variable "environment" {
 variable "project_group" {
   description = "The name of Project Group for add management tags"
   type        = string
-  default     = "grp-flipeon-prod"
+  default     = "grp-flipeon-dev"
 }
 
 variable "project_name" {

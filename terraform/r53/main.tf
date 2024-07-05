@@ -1,13 +1,13 @@
+provider "aws" {
+  region = var.region
+}
+
 locals {
   domain = var.environment != "prod" ? "${var.environment}.${var.domain_name}" : var.domain_name
 }
 
-resource "aws_route53_zone" "primary" {
-  name = local.domain
-}
-
 resource "aws_route53_record" "www" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = var.dns_zone
   name    = "www.${local.domain}"
   type    = "A"
 
@@ -19,7 +19,7 @@ resource "aws_route53_record" "www" {
 }
 
 resource "aws_route53_record" "other_all" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = var.dns_zone
   name    = "*.${local.domain}"
   type    = "A"
 
@@ -31,7 +31,7 @@ resource "aws_route53_record" "other_all" {
 }
 
 resource "aws_route53_record" "app" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = var.dns_zone
   name    = "*.app.${local.domain}"
   type    = "A"
 
@@ -43,7 +43,7 @@ resource "aws_route53_record" "app" {
 }
 
 resource "aws_route53_record" "api" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = var.dns_zone
   name    = "*.api.${local.domain}"
   type    = "A"
 
