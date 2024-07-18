@@ -141,7 +141,6 @@ module "ecs_api" {
 }
 
 
-
 module "docs_bucket" {
   source = "./s3"
   bucket_name = "docs-bucket-${var.project_name}-${var.environment}"
@@ -165,18 +164,6 @@ module "support_bucket" {
   expiration_days = 30
   transition_days = 7
 }
-
-
-# module "cloudfront" {
-#   source                = "./cloudfront"
-#   project_name          = var.project_name
-#   environment           = var.environment 
-#   origin_domain_name    = module.logs_bucket.bucket_domain_name
-#   default_root_object   = "index.html"
-#   project_group         = var.project_group
-#   certificate_arn       = "" # module.certificate.arn
-#   region                = var.region 
-# }
 
 module "cloudwatch" {
   source                = "./cloudwatch"

@@ -3,10 +3,6 @@ provider "aws" {
 }
 
 resource "aws_cloudfront_distribution" "main" {
-  # viewer_certificate {
-  #   acm_certificate_arn = var.certificate_arn
-  #   ssl_support_method  = "sni-only"
-  # }
 
   dynamic "viewer_certificate" {
     for_each = var.certificate_arn != "" ? [var.certificate_arn] : []
