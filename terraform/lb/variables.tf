@@ -38,7 +38,7 @@ variable "certificate_arn" {
   type        = string
 }
 
-variable "validation_record_fqdns" {
-  description = "The FQDNs for the certificate validation"
-  type        = list(string)
+variable "logs_bucket" {
+  description = "The logs bucket for the access logs"
+  type        = string
 }

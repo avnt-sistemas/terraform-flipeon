@@ -17,3 +17,7 @@ output "load_balancer_zone_id" {
 output "load_balancer_security_group" {
   value = aws_lb.application.security_groups
 }
+
+# output "load_balancer_vpc_id" {
+#   value = aws_lb.application.
+# }

@@ -1,43 +1,43 @@
-locals {
-  azs = [for suffix in var.suffixes : "${var.region}${suffix}"]
+data "aws_availability_zones" "available" {}
+
+resource "aws_vpc" "main" {
+  cidr_block = var.vpc_cidr
+  # Outras configurações
 }
 
-
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.2"
-
-  name = var.vpc_name
-  cidr = var.vpc_cidr
-
-  azs             = local.azs
-  private_subnets = var.private_subnets
-  public_subnets  = var.public_subnets
-
-  enable_nat_gateway = true
-  single_nat_gateway = true
-
+# Criação das sub-redes privadas usando as variáveis
+resource "aws_subnet" "private" {
+  count = length(var.private_subnets)
+  vpc_id     = aws_vpc.main.id
+  cidr_block = element(var.private_subnets, count.index)
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  
   tags = {
-    Name = var.vpc_name
+    Name = "private-subnet-${count.index}"
     ProjectGroup = var.project_group
   }
 }
 
-
-resource "aws_eip" "nat" {
-  count = length(module.vpc.azs)
-  domain = "vpc"
-}
-
-resource "aws_vpc" "this" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-
+# Criação das sub-redes públicas usando as variáveis
+resource "aws_subnet" "public" {
+  count = length(var.public_subnets)
+  vpc_id     = aws_vpc.main.id
+  cidr_block = element(var.public_subnets, count.index)
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  
   tags = {
-    Name = var.vpc_name
+    Name = "public-subnet-${count.index}"
     ProjectGroup = var.project_group
   }
 }
 
-resource "aws_default_vpc" "this" {}
+# Criação do grupo de sub-redes do RDS
+resource "aws_db_subnet_group" "database" {
+  name       = "${var.project_name}-${var.environment}-db-subnet-group"
+  subnet_ids = aws_subnet.private[*].id  # Sub-redes privadas devem estar em múltiplas AZs
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-db-subnet-group"
+    ProjectGroup = var.project_group
+  }
+}

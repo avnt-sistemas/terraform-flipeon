@@ -13,12 +13,6 @@ variable "lb_zone_id" {
   type        = string
 }
 
-variable "domain_name" {
-  description = "The domain name of project"
-  type        = string
-  default     = "flipeon.com"
-}
-
 variable "region" {
   description = "The AWS region to deploy the resources"
   type        = string

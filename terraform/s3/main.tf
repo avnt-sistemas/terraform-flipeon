@@ -38,7 +38,8 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
         Effect = "Allow"
         Principal = "*"
         Action = [
-          "s3:*"
+          "s3:GetObject",
+          "s3:ListBucket"
         ]
         Resource = [
           "${aws_s3_bucket.bucket.arn}",
@@ -47,4 +48,15 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
       }
     ]
   })
+
+  depends_on = [aws_s3_bucket_public_access_block.bucket_policy_settings]
+}
+
+resource "aws_s3_bucket_public_access_block" "bucket_policy_settings" {
+  bucket = aws_s3_bucket.bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }

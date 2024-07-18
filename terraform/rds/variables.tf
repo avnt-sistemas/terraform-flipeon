@@ -20,11 +20,11 @@ variable "db_username" {
 }
 
 
-variable "db_family" {
-  description = "The engine for the database"
-  type        = string
-  default     = "postgres12"
-}
+# variable "db_family" {
+#   description = "The engine for the database"
+#   type        = string
+#   default     = "postgres12"
+# }
 
 variable "db_engine" {
   description = "The engine for the database"
@@ -34,8 +34,8 @@ variable "db_engine" {
 
 variable "db_engine_version" {
   description = "The engine version for the database"
-  type        = string
-  default     = "12"
+  type        = number
+  default     = 16.2
 }
 
 variable "db_reader_instance_class" {
@@ -77,6 +77,11 @@ variable "project_group" {
 
 variable "subnet_ids" {
   description = "A list of subnet IDs for the ECS service"
+  type        = list(string)
+}
+
+variable "vpc_security_group_ids" {
+  description = "A list of Security Group IDs for the ECS service"
   type        = list(string)
 }
 

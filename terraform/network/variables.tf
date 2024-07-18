@@ -1,5 +1,15 @@
+variable "environment" {
+  description = "The environment of Project"
+  type        = string
+}
+
 variable "region" {
   description = "The region of the VPC"
+  type        = string
+}
+
+variable "project_name" {
+  description = "The project name of the VPC"
   type        = string
 }
 

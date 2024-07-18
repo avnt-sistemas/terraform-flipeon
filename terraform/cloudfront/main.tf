@@ -3,9 +3,17 @@ provider "aws" {
 }
 
 resource "aws_cloudfront_distribution" "main" {
-  viewer_certificate {
-    acm_certificate_arn = var.certificate_arn
-    ssl_support_method  = "sni-only"
+  # viewer_certificate {
+  #   acm_certificate_arn = var.certificate_arn
+  #   ssl_support_method  = "sni-only"
+  # }
+
+  dynamic "viewer_certificate" {
+    for_each = var.certificate_arn != "" ? [var.certificate_arn] : []
+    content {
+      acm_certificate_arn = var.certificate_arn
+      ssl_support_method  = "sni-only"
+    }
   }
 
   origin {
@@ -31,7 +39,7 @@ resource "aws_cloudfront_distribution" "main" {
       }
     }
 
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = var.certificate_arn != "" ? "redirect-to-https" : "allow-all"
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400

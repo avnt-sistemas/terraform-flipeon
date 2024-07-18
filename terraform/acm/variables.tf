@@ -18,12 +18,12 @@ variable "environment" {
   type        = string
 }
 
-variable "domain_name" {
-  description = "The domain name for the project"
+variable "dns_zone" {
+  description = "The ID of the Route 53 hosted zone"
   type        = string
 }
 
-variable "dns_zone" {
-  description = "The ID of the Route 53 hosted zone"
+variable "domain_name" {
+  description = "The domain name of Route 53 hosted zone"
   type        = string
 }
