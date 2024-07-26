@@ -1,10 +1,15 @@
 locals {
   domain = var.environment != "prod" ? "${var.environment}.${var.domain_name}" : var.domain_name
+  ecr_image_version = var.environment == "dev" ? "pre-release" : var.environment == "prod" ? "latest" : "${var.environment}-release"
+
+  connection_string = "Server=${module.rds.db_endpoint};Database=flipeon_${var.environment};Port=${module.rds.db_port};User Id=${var.project_name};Password=${module.rds.db_password}"
 }
 
 provider "aws" {
   region = var.region
 }
+
+data "aws_caller_identity" "current" {}
 
 module "network" {
   source        = "./network"
@@ -101,14 +106,20 @@ module "rds" {
   load_balancer_security_group = module.load_balancer.load_balancer_security_group
 }
 
+module "upload_sqs" {
+  source = "./sqs"
+  queue_name = "nfce-s3-storage-queue"
+}
+
 module "ecs_app" {
   source = "./ecs"
   cluster_name = "${var.project_name}-app-${var.environment}"
+  image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/flipeon-app:${local.ecr_image_version}"
 
   region = var.region
 
   vpc_id     = module.network.vpc_id  
-  subnet_ids = module.network.private_subnets
+  subnet_ids = module.network.public_subnets
   source_security_group_ids = [module.security_groups.ecs_security_group_id]
   lb_target_group = module.load_balancer.target_group_arn
 
@@ -117,6 +128,8 @@ module "ecs_app" {
   task_cpu         = 256
   task_memory      = 512
 
+  environment_vars = []
+
   depends_on = [ module.load_balancer ]
 
 }
@@ -124,11 +137,12 @@ module "ecs_app" {
 module "ecs_api" {
   source = "./ecs"
   cluster_name = "${var.project_name}-api-${var.environment}"
+  image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/flipeon-api:${local.ecr_image_version}"
 
   region = var.region
 
   vpc_id     = module.network.vpc_id  
-  subnet_ids = module.network.private_subnets
+  subnet_ids = module.network.public_subnets
   source_security_group_ids = [module.security_groups.ecs_security_group_id]
   lb_target_group = module.load_balancer.target_group_arn
 
@@ -136,6 +150,53 @@ module "ecs_api" {
   max_capacity = 2
   task_cpu         = 256
   task_memory      = 512
+
+  environment_vars = [
+        {
+          name  = "EpConnectionString"
+          value = local.connection_string
+        },
+        {
+          name  = "ibpt-token"
+          value = "NxYOJ2dz09WvMrBPoLglwUScLUQWQ3OL"
+        },
+        {
+          name  = "download-lambda-name"
+          value = "nfce-download-lambda"
+        },
+        {
+          name  = "PORT"
+          value = "80"
+        },
+        {
+          name  = "email-port"
+          value = "587"
+        },
+        {
+          name  = "ASPNETCORE_URLS"
+          value = "http://0.0.0.0:80"
+        },
+        {
+          name  = "email-host"
+          value = "email-smtp.sa-east-1.amazonaws.com"
+        },
+        {
+          name  = "email-account"
+          value = "nao-responder@flipeon.com"
+        },
+        {
+          name  = "NFCE_SQS_URL"
+          value = module.upload_sqs.sqs_queue_id
+        },
+        {
+          name  = "aws-region"
+          value = var.region
+        },
+        {
+          name  = "nfce-sqs-name"
+          value = "nfce-s3-storage-queue"
+        },
+      ]
 
   depends_on = [ module.load_balancer ]
 }
@@ -169,3 +230,23 @@ module "cloudwatch" {
   source                = "./cloudwatch"
   log_group_name        = "${var.project_name}-logs-${var.environment}"
 }
+
+module "nfce_s3_lambda_storage" {
+  source = "./lambda/nfce-s3-lambda-storage"
+  
+  function_name = "nfce-s3-lambda-storage"
+  queue_id     = module.upload_sqs.sqs_queue_id
+  queue_arn      = module.upload_sqs.sqs_queue_arn
+  filename      = "${path.module}/lambda/nfce-s3-lambda-storage/code.zip"
+  api_endpoit   = "${var.environment == "prod" ? "https://" : "http://" }${local.domain}"
+}
+
+# module "nfce_download_lambda" {
+#   source = "./lambda/nfce-s3-lambda-storage"
+  
+#   function_name = "nfce-download-lambda"
+#   queue_arn     = module.upload_sqs.sqs_queue_id
+#   queue_id      = module.upload_sqs.sqs_queue_arn
+#   filename      = "${path.module}/lambda/nfce-s3-lambda-storage/code.zip"
+#   api_endpoit   = "${var.environment == "prod" ? "https://" : "http://" }${local.domain}"
+# }

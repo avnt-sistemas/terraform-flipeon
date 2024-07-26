@@ -24,7 +24,10 @@ resource "aws_db_instance" "db_writer" {
   apply_immediately = true
 
   skip_final_snapshot = true
+  
   backup_retention_period = 7
+  
+  publicly_accessible = true
 
   tags = {
     Name         = "${var.db_identifier}-writer"
@@ -32,23 +35,28 @@ resource "aws_db_instance" "db_writer" {
   }
 }
 
-resource "aws_db_instance" "db_reader" {
-  identifier           = "${var.db_identifier}-reader"
-  engine               = var.db_engine
-  engine_version       = var.db_engine_version
-  instance_class       = var.db_reader_instance_class
+# resource "aws_db_instance" "db_reader" {
+#   identifier           = "${var.db_identifier}-reader"
+#   engine               = var.db_engine
+#   engine_version       = var.db_engine_version
+#   instance_class       = var.db_reader_instance_class
   
-  replicate_source_db  = aws_db_instance.db_writer.identifier
+#   replicate_source_db  = aws_db_instance.db_writer.identifier
+  
+#   allocated_storage       = var.db_allocated_storage
+#   max_allocated_storage   = var.db_engine == "aurora-postgresql" ? null : var.db_max_allocated_storage
+#   iops                    = var.db_engine != "aurora-postgresql" ? null : 1000
 
-  apply_immediately = true
+#   apply_immediately = true
+#   skip_final_snapshot = true
 
-  tags = {
-    Name         = "${var.db_identifier}-reader"
-    ProjectGroup = var.project_group
-  }
+#   tags = {
+#     Name         = "${var.db_identifier}-reader"
+#     ProjectGroup = var.project_group
+#   }
 
-  depends_on = [ aws_db_instance.db_writer ]
-}
+#   depends_on = [ aws_db_instance.db_writer ]
+# }
 
 resource "local_file" "db_password_file" {
   filename = "${path.module}/db_password.txt"

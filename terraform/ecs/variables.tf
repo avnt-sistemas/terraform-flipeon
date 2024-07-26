@@ -52,3 +52,8 @@ variable "lb_target_group" {
   description = "The load balancer target group"
   type        = string
 }
+
+variable "environment_vars" {
+}
+
+
