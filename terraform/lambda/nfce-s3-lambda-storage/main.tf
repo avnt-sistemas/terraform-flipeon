@@ -9,7 +9,7 @@ resource "aws_lambda_function" "upload_lambda" {
     variables = {
       SQS_QUEUE_URL = var.queue_id
       DEST_S3_BUCKET = "docs-bucket-flipeon-dev"
-      FLIPEON_API    = var.api_endpoit
+      FLIPEON_API    = var.api_endpoint
     }
   }
 }

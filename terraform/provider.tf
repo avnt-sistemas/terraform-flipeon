@@ -20,26 +20,13 @@ module "network" {
   project_name  = var.project_name
 }
 
-module "gateway" {
-  source = "./gw"
-  project_group = var.project_group
-  project_name = var.project_name
-  vpc_id = module.network.vpc_id
-
-  public_subnets = module.network.public_subnet
-}
-
 module "security_groups" {
   source = "./sg"
 
-  # project_name          = var.project_name
   project_group         = var.project_group
-  
   vpc_id = module.network.vpc_id
 }
 
-
-# I need make a hosted zone before certificate, but dns records after all script run
 resource "aws_route53_zone" "primary" {
   name = local.domain
 }
@@ -53,19 +40,6 @@ module "logs_bucket" {
   expiration_days = 365
 }
 
-
-# module "certificate" {
-#   source = "./acm"
-
-#   region        = var.region
-#   project_name  = var.project_name
-#   project_group = var.project_group
-#   environment   = var.environment
-#   domain_name   = local.domain
-
-#   dns_zone = aws_route53_zone.primary.zone_id
-# }
-
 module "load_balancer" {
   source                = "./lb"
   region                = var.region
@@ -74,7 +48,7 @@ module "load_balancer" {
   environment           = var.environment
   vpc_id                = module.network.vpc_id
   security_group_id     = module.security_groups.ecs_security_group_id
-  subnet_ids            = module.network.private_subnets
+  subnet_ids            = module.network.public_subnets
 
   certificate_arn       = "" # module.certificate.arn
 
@@ -121,17 +95,21 @@ module "ecs_app" {
   vpc_id     = module.network.vpc_id  
   subnet_ids = module.network.public_subnets
   source_security_group_ids = [module.security_groups.ecs_security_group_id]
-  lb_target_group = module.load_balancer.target_group_arn
+  lb_target_group = module.load_balancer.target_group_app_arn
 
   desired_capacity = 1
   max_capacity     = 2
   task_cpu         = 256
   task_memory      = 512
 
-  environment_vars = []
+  environment_vars = [
+    {
+      name = "API_URL"
+      value = "${var.environment == "prod" ? "https://" : "http://" }api.${local.domain}"
+    },
+  ]
 
   depends_on = [ module.load_balancer ]
-
 }
 
 module "ecs_api" {
@@ -144,7 +122,7 @@ module "ecs_api" {
   vpc_id     = module.network.vpc_id  
   subnet_ids = module.network.public_subnets
   source_security_group_ids = [module.security_groups.ecs_security_group_id]
-  lb_target_group = module.load_balancer.target_group_arn
+  lb_target_group = module.load_balancer.target_group_api_arn
 
   desired_capacity = 1
   max_capacity = 2
@@ -186,7 +164,7 @@ module "ecs_api" {
         },
         {
           name  = "NFCE_SQS_URL"
-          value = module.upload_sqs.sqs_queue_id
+          value = module.upload_sqs.sqs_queue_id # o ID da queue é literalmente a url de acesso da mesma
         },
         {
           name  = "aws-region"
@@ -200,7 +178,6 @@ module "ecs_api" {
 
   depends_on = [ module.load_balancer ]
 }
-
 
 module "docs_bucket" {
   source = "./s3"
@@ -238,15 +215,5 @@ module "nfce_s3_lambda_storage" {
   queue_id     = module.upload_sqs.sqs_queue_id
   queue_arn      = module.upload_sqs.sqs_queue_arn
   filename      = "${path.module}/lambda/nfce-s3-lambda-storage/code.zip"
-  api_endpoit   = "${var.environment == "prod" ? "https://" : "http://" }${local.domain}"
+  api_endpoint   = "${var.environment == "prod" ? "https://" : "http://" }api.${local.domain}"
 }
-
-# module "nfce_download_lambda" {
-#   source = "./lambda/nfce-s3-lambda-storage"
-  
-#   function_name = "nfce-download-lambda"
-#   queue_arn     = module.upload_sqs.sqs_queue_id
-#   queue_id      = module.upload_sqs.sqs_queue_arn
-#   filename      = "${path.module}/lambda/nfce-s3-lambda-storage/code.zip"
-#   api_endpoit   = "${var.environment == "prod" ? "https://" : "http://" }${local.domain}"
-# }

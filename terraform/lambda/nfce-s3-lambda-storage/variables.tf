@@ -25,7 +25,7 @@ variable "queue_arn" {
   type        = string
 }
 
-variable "api_endpoit" {
+variable "api_endpoint" {
   description = "The ARN of the SQS queue"
   type        = string
 }

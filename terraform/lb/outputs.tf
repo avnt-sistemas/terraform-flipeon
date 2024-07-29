@@ -2,8 +2,12 @@ output "load_balancer_arn" {
   value = aws_lb.application.arn
 }
 
-output "target_group_arn" {
-  value = aws_lb_target_group.application.arn
+output "target_group_app_arn" {
+  value = aws_lb_target_group.app.arn
+}
+
+output "target_group_api_arn" {
+  value = aws_lb_target_group.api.arn
 }
 
 output "load_balancer_dns_name" {
