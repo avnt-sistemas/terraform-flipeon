@@ -33,4 +33,3 @@ variable "use_eks" {
   type        = bool
   default     = false
 }
-  

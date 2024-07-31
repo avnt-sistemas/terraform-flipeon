@@ -42,3 +42,9 @@ variable "logs_bucket" {
   description = "The logs bucket for the access logs"
   type        = string
 }
+  
+variable "domain_name" {
+  description = "The domain name of project"
+  type        = string
+  default     = "flipeon.com"
+}

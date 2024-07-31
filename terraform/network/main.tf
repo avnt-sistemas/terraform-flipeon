@@ -108,7 +108,7 @@ resource "aws_route_table_association" "private" {
 # Criação do grupo de sub-redes do RDS
 resource "aws_db_subnet_group" "database" {
   name       = "${var.project_name}-${var.environment}-db-subnet-group"
-  subnet_ids = aws_subnet.private[*].id  # Sub-redes privadas devem estar em múltiplas AZs
+  subnet_ids = aws_subnet.public[*].id  # Sub-redes privadas devem estar em múltiplas AZs
 
   tags = {
     Name = "${var.project_name}-${var.environment}-db-subnet-group"

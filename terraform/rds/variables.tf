@@ -1,3 +1,8 @@
+variable "environment" {
+  description = "The environment of Project"
+  type        = string
+}
+
 variable "db_identifier" {
   description = "The identifier for the RDS instance"
   type        = string
@@ -18,13 +23,6 @@ variable "db_username" {
   description = "The master username for the database"
   type        = string
 }
-
-
-# variable "db_family" {
-#   description = "The engine for the database"
-#   type        = string
-#   default     = "postgres12"
-# }
 
 variable "db_engine" {
   description = "The engine for the database"
@@ -89,4 +87,8 @@ variable "load_balancer_security_group" {
   description = "load_balancer_security_group"
 }
 
+variable "with_replica" {
+  type = bool
+  default = false
+}
 

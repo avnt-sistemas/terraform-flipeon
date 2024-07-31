@@ -45,6 +45,7 @@ module "load_balancer" {
   region                = var.region
   project_name          = var.project_name
   project_group         = var.project_group
+  domain_name           = local.domain  
   environment           = var.environment
   vpc_id                = module.network.vpc_id
   security_group_id     = module.security_groups.ecs_security_group_id
@@ -66,12 +67,13 @@ module "route53" {
 
 module "rds" {
   source          = "./rds"
+  environment = var.environment
   db_identifier = "flipeon-rds-${var.environment}"
   db_name = "flipeon_${var.environment}"
   db_username = var.project_name
 
   vpc_id                  = module.network.vpc_id
-  subnet_ids              = module.network.private_subnets
+  subnet_ids              = module.network.public_subnets
   database_subnet_group   = module.network.database_subnet_group
   vpc_security_group_ids  = [module.security_groups.rds_security_group_id]
 
@@ -80,9 +82,48 @@ module "rds" {
   load_balancer_security_group = module.load_balancer.load_balancer_security_group
 }
 
+resource "aws_route53_record" "r53_rds_endpoint" {
+
+  count = var.environment == "prod"? 0 : 1 # Em produção não precisamos de acesso externo ao banco de dados
+
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "db.${local.domain}"
+  type    = "CNAME"
+  ttl     = 300
+  records = [module.rds.db_endpoint]
+}
+
 module "upload_sqs" {
   source = "./sqs"
   queue_name = "nfce-s3-storage-queue"
+}
+
+resource "aws_ecr_repository" "ecr_app" {
+  name                 = "flipeon-app"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name         = "flipeon-app-ecr"
+    ProjectGroup = var.project_group
+  }
+}
+
+resource "aws_ecr_repository" "ecr_api" {
+  name                 = "flipeon-api"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name         = "flipeon-api-ecr"
+    ProjectGroup = var.project_group
+  }
 }
 
 module "ecs_app" {

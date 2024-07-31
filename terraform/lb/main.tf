@@ -137,7 +137,7 @@ resource "aws_lb_listener_rule" "app" {
 
   condition {
     host_header {
-      values = ["app.${local.suffix}"]
+      values = ["app.${var.domain_name}"]
     }
   }
 }
@@ -153,7 +153,7 @@ resource "aws_lb_listener_rule" "api" {
 
   condition {
     host_header {
-      values = ["api.${local.suffix}"]
+      values = ["api.${var.domain_name}"]
     }
   }
 }
